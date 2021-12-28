@@ -11,6 +11,7 @@ class ConnectX(Game):
         self.turn = 1
         self.duration = 0
         self.game_end = False
+        self.__inarow = 4
         self.__dir = [[-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0]]
         self.__logs = []
         self.reset()
@@ -73,10 +74,10 @@ class ConnectX(Game):
         return False
 
     def __check_4(self, x, y, dx, dy):
-        if x + 3 * dx < 0 or x + 3 * dx >= self.row: return False
-        if y + 3 * dy < 0 or y + 3 * dy >= self.col: return False
+        if x + 3 * dx < 0 or x + (self.__inarow - 1) * dx >= self.row: return False
+        if y + 3 * dy < 0 or y + (self.__inarow - 1) * dy >= self.col: return False
 
-        for i in range(4):
+        for i in range(self.__inarow):
             if self.state[x][y] != self.turn:
                 return False
             x = x + dx
