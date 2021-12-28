@@ -25,3 +25,7 @@ class Game(metaclass=ABCMeta):
     @abstractmethod
     def __str__(self):
         pass
+
+    @abstractmethod
+    def print_logs(self):
+        pass

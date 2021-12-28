@@ -12,6 +12,7 @@ class ConnectX(Game):
         self.duration = 0
         self.game_end = False
         self.__dir = [[-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0]]
+        self.__logs = []
         self.reset()
 
     def reset(self):
@@ -23,9 +24,14 @@ class ConnectX(Game):
     def step(self, action):
         self.duration += 1
         if action not in self._allowed_actions():
-            return None, None, None, "Error({0}): not allowed action({1}) by {2}".format(self.duration, action+1, self.turn)
+            log = "Error({0}): not allowed action({1}) by {2}".format(self.duration, action+1, self.turn)
+            self.__logs.append(log)
+            return None, None, None, log
+
         if self.game_end:
-            return None, None, None, "Error({0}): game is already over".format(self.duration)
+            log = "Error({0}): game is already over".format(self.duration)
+            self.__logs.append(log)
+            return None, None, None, log
 
         row_pos = self.row-1
         for i in range(self.row-1, -1, -1):
@@ -34,7 +40,10 @@ class ConnectX(Game):
                 break
 
         log = "Message({0}): Player {1} mark at ({2}, {3})".format(self.duration, self.turn, row_pos+1, action+1)
+        self.__logs.append(log)
+
         self.state[row_pos][action] = self.turn
+        self.__logs.append(str(self))
 
         for i in range(8):
             self.game_end |= self.__check_4(row_pos, action, self.__dir[i][0], self.__dir[i][1])
@@ -42,7 +51,9 @@ class ConnectX(Game):
         reward = 1
         if self.game_end:
             reward = 10000
-            log = ''.join([log, "\nMessage({0}): Player {1} win".format(self.duration, self.turn)])
+            newlog = "Message({0}): Player {1} win".format(self.duration, self.turn)
+            self.__logs.append(newlog)
+            log = ''.join([log, "\n"+newlog])
 
         self.turn = 3 - self.turn
         return self.state, reward, self.game_end, log
@@ -85,3 +96,6 @@ class ConnectX(Game):
         ret += '=' * self.col
         return ret
 
+    def print_logs(self):
+        for log in self.__logs:
+            print(log)
