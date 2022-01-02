@@ -26,7 +26,7 @@ class ConnectX(Game):
 
     def step(self, action):
         if action not in self.allowed_actions():
-            log = "Error({0}): not allowed action({1}) by {2}".format(self.duration, action+1, self.turn)
+            log = "Error({0}): not allowed action({1}) by {2}".format(self.duration, action + 1, self.turn)
             self.__logs.append(log)
             return None, None, None, log
 
@@ -35,16 +35,16 @@ class ConnectX(Game):
             self.__logs.append(log)
             return None, None, None, log
 
-        row_pos = self.row-1
-        for i in range(self.row-1, -1, -1):
+        row_pos = self.row - 1
+        for i in range(self.row - 1, -1, -1):
             if self.state[i][action] == 0:
                 row_pos = i
                 break
-        
-        #increase game duration
+
+        # increase game duration
         self.duration += 1
 
-        log = "Message({0}): Player {1} mark at ({2}, {3})".format(self.duration, self.turn, row_pos+1, action+1)
+        log = "Message({0}): Player {1} mark at ({2}, {3})".format(self.duration, self.turn, row_pos + 1, action + 1)
         self.__logs.append(log)
 
         self.state[row_pos][action] = self.turn
@@ -52,7 +52,7 @@ class ConnectX(Game):
 
         for i in range(8):
             self.game_end |= self.__check_4(row_pos, action, self.__dir[i][0], self.__dir[i][1])
-        
+
         if self.duration == self.col * self.row:
             self.game_end = True
             self.winner = 0
@@ -61,12 +61,12 @@ class ConnectX(Game):
         if self.game_end:
             if self.winner is None:
                 self.winner = 1 if self.turn is 1 else -1
-            
+
             reward = 10000
             newlog = "Message({0}): Player {1} win".format(self.duration, self.turn)
             self.__logs.append(newlog)
-            log = ''.join([log, "\n"+newlog])
-        
+            log = ''.join([log, "\n" + newlog])
+
         else:
             self.turn = 3 - self.turn
         return self.state, reward, self.game_end, log
@@ -81,7 +81,11 @@ class ConnectX(Game):
     def _check_game_end(self):
         for i in range(self.row):
             for j in range(self.col):
-                if self.__check_4(i, j, -1, 1) or self.__check_4(i, j, 0, 1) or self.__check_4(i, j, 1, 1) or self.__check_4(i, j, 1, 0):
+                if self.__check_4(i, j, -1, 1) or self.__check_4(i, j, 0, 1) or self.__check_4(i, j, 1,
+                                                                                               1) or self.__check_4(i,
+                                                                                                                    j,
+                                                                                                                    1,
+                                                                                                                    0):
                     return True
         return False
 
@@ -117,4 +121,4 @@ class ConnectX(Game):
         return self.winner
 
     def get_player(self):
-        return 3-2*self.turn
+        return 3 - 2 * self.turn

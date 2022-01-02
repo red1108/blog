@@ -1,10 +1,7 @@
 from ConnectX import ConnectX
-from Agent import agent_random
+from Agent import Agent_random
+from Play import play
 
 if __name__ == '__main__':
-    env = ConnectX()
-    while True:
-        _state, _reward, done, _log = env.step(agent_random(env))
-        if done:
-            break
-    env.print_logs()
+    winner, step = play(ConnectX(), Agent_random(), Agent_random(), is_print=True)
+    print("winner = {}, step = {}".format(winner, step))

@@ -32,10 +32,10 @@ class Game(metaclass=ABCMeta):
 
     @abstractmethod
     def get_winner(self):
-        #first player=1, second player=-1, tie=0, else None
+        # first player=1, second player=-1, tie=0, else None
         pass
 
     @abstractmethod
     def get_player(self):
-        #first player=1, second player=-1
+        # first player=1, second player=-1
         pass
