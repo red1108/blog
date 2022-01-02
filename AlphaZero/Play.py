@@ -9,4 +9,3 @@ def play(env, player1, player2, is_print=False):
     if is_print:
         env.print_logs()
     return env.get_winner(), step
-
