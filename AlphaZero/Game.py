@@ -13,7 +13,7 @@ class Game(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _allowed_actions(self):
+    def allowed_actions(self):
         # return allowed actions with 1D list
         pass
 
@@ -28,4 +28,14 @@ class Game(metaclass=ABCMeta):
 
     @abstractmethod
     def print_logs(self):
+        pass
+
+    @abstractmethod
+    def get_winner(self):
+        #first player=1, second player=-1, tie=0, else None
+        pass
+
+    @abstractmethod
+    def get_player(self):
+        #first player=1, second player=-1
         pass
