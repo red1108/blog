@@ -1,13 +1,14 @@
 from copy import copy
 from math import sqrt
 import random
+import numpy as np
 
 # U = V + C * prob * sqrt(N_tot)/(1+N)
 C = 1.0
 
 
-def policy_result(policy, game):
-    probs, value = policy(game)
+def agent_result(agent, game):
+    probs, value = agent.result(game)
     allowed_action = game.allowed_actions()
     probs = [probs[i] for i in allowed_action]
     return game.allowed_actions(), probs, value
@@ -37,7 +38,7 @@ class Node:
 
         if self.winner is not None:
             self.V = self.winner * self.game.get_player()
-            self.U = 0 if self.winner is 0 else self.V * float('inf')
+            self.U = 0 if self.winner == 0 else self.V * float('inf')
 
         self.mother = mother
 
@@ -49,9 +50,9 @@ class Node:
         for action, game in zip(actions, games):
             game.step(action)
 
-        self.child = {tuple(a): Node(g, self, p) for a, g, p in zip(actions, games, probs)}
+        self.child = {a:Node(g, self, p) for a, g, p in zip(actions, games, probs)}
 
-    def explore(self, policy):
+    def explore(self, agent):
 
         if self.game.winner is not None:
             raise ValueError("ERROR: the game is already ended with winner {0}".format(self.game.get_winner()))
@@ -59,10 +60,10 @@ class Node:
         current = self
 
         # explore to the leaf
-        while not current.child and current.winner is None:
+        while len(current.child) > 0 and current.winner is None:
 
             child = current.child
-            max_U = max(c.u for c in child.values())
+            max_U = max(c.U for c in child.values())
 
             # Choose the best action.
             actions = [a for a, c in child.items() if c.U == max_U]
@@ -81,9 +82,9 @@ class Node:
 
         # if node hasn't been expanded
         if not current.child and current.winner is None:
-            # policy outputs results from next player's point of view.
+            # agent outputs results from next player's point of view.
             # thus multiplied by -1
-            allowed_actions, probs, value = policy_result(policy, current.game)
+            allowed_actions, probs, value = agent_result(agent, current.game)
             current.nn_v = -value
             current.create_child(allowed_actions, probs)
             current.V = -float(value)
@@ -125,8 +126,9 @@ class Node:
             prob = [(c.N / max_N) ** (1 / temperature) for c in child.values()]
 
         # normalize
+        prob = np.array(prob)
         if sum(prob) > 0:
-            prob /= sum(prob)
+            prob = prob / sum(prob)
         else:
             prob = [1.0 / len(prob) for _ in prob]
 

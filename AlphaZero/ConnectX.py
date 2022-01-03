@@ -1,5 +1,6 @@
 from Game import Game
 import numpy as np
+from copy import deepcopy
 
 
 class ConnectX(Game):
@@ -15,7 +16,6 @@ class ConnectX(Game):
         self.__inarow = 4
         self.__dir = [[-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0]]
         self.__logs = []
-        self.reset()
 
     def reset(self):
         self.state = np.zeros((self.row, self.col), dtype=np.int32)
@@ -60,7 +60,7 @@ class ConnectX(Game):
         reward = 1
         if self.game_end:
             if self.winner is None:
-                self.winner = 1 if self.turn is 1 else -1
+                self.winner = 1 if self.turn == 1 else -1
 
             reward = 10000
             newlog = "Message({0}): Player {1} win".format(self.duration, self.turn)
@@ -113,10 +113,29 @@ class ConnectX(Game):
         ret += '=' * self.col
         return ret
 
+    def __copy__(self):
+        cls = self.__class__
+        new_game = cls.__new__(cls)
+        new_game.__dict__.update(self.__dict__)
+
+        new_game.row = self.row
+        new_game.state = deepcopy(self.state)
+        new_game.turn = self.turn
+        new_game.duration = self.duration
+        new_game.game_end = self.game_end
+        new_game.winner = self.winner
+        new_game.__inarow = self.__inarow
+        new_game.__dir = self.__dir
+        new_game.__logs = self.__logs
+        return new_game
+
     def print_logs(self):
         for log in self.__logs:
             print(log)
 
+    def get_state(self):
+        return np.reshape(self.state, (1, self.col * self.row))
+    
     def get_winner(self):
         return self.winner
 

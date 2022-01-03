@@ -27,7 +27,16 @@ class Game(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def __copy__(self):
+        pass
+
+    @abstractmethod
     def print_logs(self):
+        pass
+
+    @abstractmethod
+    def get_state(self):
+        # return state to 1D numpy array
         pass
 
     @abstractmethod
