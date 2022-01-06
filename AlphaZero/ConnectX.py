@@ -8,6 +8,8 @@ class ConnectX(Game):
     def __init__(self):
         self.col = 7
         self.row = 6
+        self.state_size = self.col * self.row
+        self.action_size = self.col
         self.state = np.zeros((self.row, self.col), dtype=np.int32)
         self.turn = 1
         self.duration = 0

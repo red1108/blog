@@ -135,7 +135,7 @@ class Node:
         nn_prob = [c.prob for c in child.values()]
         next_state = random.choices(list(child.values()), weights=prob)[0]
 
-        return next_state, (-self.V, -self.nn_v, prob, nn_prob)
+        return next_state, self.game.allowed_actions(), (-self.V, -self.nn_v, prob, nn_prob)
 
     def detach_mother(self):
         del self.mother
