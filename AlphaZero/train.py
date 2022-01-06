@@ -1,12 +1,13 @@
-# %%
-
 from collections import deque
+from ConnectX import ConnectX
+from Utils import calculate_winrate
+from Agent import Agent_random, Agent_DNN
+
+import tensorflow as tf
 import MCTS
 import numpy as np
-from ConnectX import ConnectX
-from Agent import Agent_random, Agent_DNN
-import tensorflow as tf
-import progressbar as pb
+import warnings
+warnings.filterwarnings("ignore")
 
 # game parameter
 game_row = 6
@@ -15,32 +16,27 @@ game_state_size = game_row * game_col
 game_action_size = game_col
 
 # trainning parameter
-episodes = 400
+episodes = 200
+iterations = 200
 outcomes = []
 losses = []
-
-# widget and timer
-widget = ['training loop: ', pb.Percentage(), ' ', pb.Bar(), ' ', pb.ETA()]
-timer = pb.ProgressBar(widgets=widget, maxval=episodes).start()
 
 # agent
 agent = Agent_DNN()
 
 # optimizer
-actor_optimizer = tf.keras.optimizers.Adam(1e-3)
-critic_optimizer = tf.keras.optimizers.Adam(1e-3)
+actor_optimizer = tf.keras.optimizers.Adam(1e-4)
+critic_optimizer = tf.keras.optimizers.Adam(1e-4)
 
+# loss function
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 mean_squared_error = tf.keras.losses.MeanSquaredError()
 
 
-def train_all(episodes):
-    for e in range(episodes):
+def train_all(episodes, view_winrate=False):
+    for step in range(episodes):
 
         mytree = MCTS.Node(ConnectX())
-        vterm = []
-        logterm = []
-        actor_loss = 0
 
         # training dataset
         states = []
@@ -49,7 +45,7 @@ def train_all(episodes):
         masks = []
 
         while mytree.winner is None:
-            for _ in range(50):
+            for _ in range(iterations):
                 mytree.explore(agent)
 
             current_player = mytree.game.get_player()
@@ -64,11 +60,13 @@ def train_all(episodes):
             vs.append(v * current_player)
 
         actor_loss, critic_loss = train_step(states, probs, masks, vs)
-        print("loss = ", actor_loss, critic_loss)
+        actor_loss = actor_loss.numpy()
+        critic_loss = critic_loss.numpy()
+        print("#{}.. actor loss = {}, critic loss = {} ".format(step+1, actor_loss, critic_loss))
+        if view_winrate:
+            winrate, _, _ = calculate_winrate(ConnectX(), agent, Agent_random())
+            print("...winrate = {}".format(winrate))
 
-        timer.update(e + 1)
-
-    timer.finish()
 
 @tf.function
 def train_step(states, probs, masks, vs):
@@ -98,4 +96,8 @@ def train_step(states, probs, masks, vs):
         return actor_loss, critic_loss
 
 
-train_all(400)
+if __name__ == '__main__':
+    winrate, _, _ = calculate_winrate(ConnectX(), agent, Agent_random())
+    print("initial winrate = {}".format(winrate))
+
+    train_all(400, view_winrate=True)
