@@ -28,7 +28,7 @@ class ConnectX(Game):
 
     def step(self, action):
         if action not in self.allowed_actions():
-            log = "Error({0}): not allowed action({1}) by {2}".format(self.duration, action + 1, self.turn)
+            log = "Error({0}): not allowed action({1}) by {2}".format(self.duration, action, self.turn)
             self.__logs.append(log)
             return None, None, None, log
 
@@ -46,7 +46,7 @@ class ConnectX(Game):
         # increase game duration
         self.duration += 1
 
-        log = "Message({0}): Player {1} mark at ({2}, {3})".format(self.duration, self.turn, row_pos + 1, action + 1)
+        log = "Message({0}): Player {1} mark at ({2}, {3})".format(self.duration, self.turn, row_pos, action)
         self.__logs.append(log)
 
         self.state[row_pos][action] = self.turn
@@ -69,8 +69,7 @@ class ConnectX(Game):
             self.__logs.append(newlog)
             log = ''.join([log, "\n" + newlog])
 
-        else:
-            self.turn = 3 - self.turn
+        self.turn = 3 - self.turn
         return self.state, reward, self.game_end, log
 
     def allowed_actions(self):
@@ -81,13 +80,11 @@ class ConnectX(Game):
         return allowed_actions
 
     def _check_game_end(self):
+        if self.game_end:
+            return True
         for i in range(self.row):
             for j in range(self.col):
-                if self.__check_4(i, j, -1, 1) or self.__check_4(i, j, 0, 1) or self.__check_4(i, j, 1,
-                                                                                               1) or self.__check_4(i,
-                                                                                                                    j,
-                                                                                                                    1,
-                                                                                                                    0):
+                if self.__check_4(i, j, -1, 1) or self.__check_4(i, j, 0, 1) or self.__check_4(i, j, 1, 1) or self.__check_4(i, j, 1, 0):
                     return True
         return False
 

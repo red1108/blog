@@ -60,7 +60,7 @@ class Node:
         current = self
 
         # explore to the leaf
-        while len(current.child) > 0 and current.winner is None:
+        while current.child and current.winner is None:
 
             child = current.child
             max_U = max(c.U for c in child.values())
@@ -130,7 +130,7 @@ class Node:
         if sum(prob) > 0:
             prob = prob / sum(prob)
         else:
-            prob = [1.0 / len(prob) for _ in prob]
+            prob = np.array([1.0 / len(prob) for _ in prob])
 
         nn_prob = [c.prob for c in child.values()]
         next_state = random.choices(list(child.values()), weights=prob)[0]
