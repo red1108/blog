@@ -15,6 +15,10 @@ class Agent(metaclass=ABCMeta):
     def action(self, env):
         pass
 
+    @abstractmethod
+    def get_name(self):
+        pass
+
 
 class Agent_random(Agent):
 
@@ -24,6 +28,9 @@ class Agent_random(Agent):
     def action(self, env):
         allowed_actions = env.allowed_actions()
         return random.choice(allowed_actions)
+
+    def get_name(self):
+        return "random"
 
 
 class Agent_expert(Agent):
@@ -75,6 +82,9 @@ class Agent_expert(Agent):
         actions = [valid_moves[i] for i in range(len(valid_moves)) if values[i] == max(values)]
         return random.choice(actions)
 
+    def get_name(self):
+        return "expert"
+
 
 class Agent_NN(Agent, metaclass=ABCMeta):
 
@@ -89,7 +99,7 @@ class Agent_DNN(Agent_NN):
         self.column = column
 
         self.actor = tf.keras.models.Sequential()
-        self.actor.add(layers.Dense(32, activation='relu', input_shape=(42,)))
+        self.actor.add(layers.Dense(32, activation='relu'))
         self.actor.add(layers.Dense(32, activation='relu'))
         self.actor.add(layers.Dense(32, activation='relu'))
         self.actor.add(layers.Dense(32, activation='relu'))
@@ -121,3 +131,6 @@ class Agent_DNN(Agent_NN):
 
         nn_value = self.critic(state).numpy()
         return nn_probs, nn_value
+
+    def get_name(self):
+        return "DNN agent"

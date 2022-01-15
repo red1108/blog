@@ -1,11 +1,12 @@
 from collections import deque
 from ConnectX import ConnectX
-from Utils import calculate_winrate, MCTS_all_viewer, MCTS_node_viewer
+from Utils import MCTS_all_viewer, MCTS_node_viewer, print_comparison
 from Agent import Agent_random, Agent_expert, Agent_DNN
 
 import tensorflow as tf
 import MCTS
 import numpy as np
+
 np.set_printoptions(linewidth=np.inf)
 
 # game parameter
@@ -24,8 +25,8 @@ losses = []
 agent = Agent_DNN()
 
 # optimizer
-actor_optimizer = tf.keras.optimizers.Adam(1e-2)
-critic_optimizer = tf.keras.optimizers.Adam(1e-2)
+actor_optimizer = tf.keras.optimizers.Adam(1e-3)
+critic_optimizer = tf.keras.optimizers.Adam(1e-3)
 
 # loss function
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -42,6 +43,7 @@ def train_all(episodes, view_winrate=False):
         vs = []
         probs = []
         masks = []
+        h = 1
 
         while mytree.winner is None:
             for _ in range(iterations):
@@ -50,30 +52,31 @@ def train_all(episodes, view_winrate=False):
             current_player = mytree.game.get_player()
             state = mytree.game.get_state()
 
-            mytree, allowed_actions, (v, nn_v, p, nn_p) = mytree.next()
+            #MCTS_node_viewer(mytree, state_print=True)
 
+            mytree, allowed_actions, (v, nn_v, p, nn_p) = mytree.next(temperature=1.0)
+            #print(p)
+            h+=1
             mytree.detach_mother()
 
             states.append(state)
             probs.append(p)
             masks.append(allowed_actions)
-            #vs.append(v * current_player)
+            # vs.append(v * current_player)
 
         vs = [float(mytree.winner) for _ in probs]
         actor_loss, critic_loss = train_step(states, probs, masks, vs)
         actor_loss = actor_loss.numpy()
         critic_loss = critic_loss.numpy()
-        print("#{}.. actor loss = {}, critic loss = {} ".format(step+1, actor_loss, critic_loss))
+        print("#{}.. actor loss = {}, critic loss = {} ".format(step + 1, actor_loss, critic_loss))
         if view_winrate:
-            w1, w2, _ = calculate_winrate(ConnectX(), agent, Agent_random())
-            print("initial winrate = {}% {}%".format(w1 * 100, w2 * 100))
-            w1, w2, _ = calculate_winrate(ConnectX(), agent, Agent_expert())
-            print("Expert winrate = {}% {}%".format(w1 * 100, w2 * 100))
+            print_comparison(ConnectX(), agent, Agent_random(), 200)
+            print_comparison(ConnectX(), agent, Agent_expert(), 2)
             nn_probs, nn_value = agent.result(ConnectX())
-            print("... first probs = ", nn_probs)
+            print("first probs = ", nn_probs)
 
 
-#@tf.function
+# @tf.function
 def train_step(states, probs, masks, vs):
     with tf.GradientTape() as actor_tape, tf.GradientTape() as critic_tape:
         actor_loss = 0
@@ -104,9 +107,7 @@ def train_step(states, probs, masks, vs):
 
 
 if __name__ == '__main__':
-    w1, w2, _ = calculate_winrate(ConnectX(), agent, Agent_random())
-    print("initial winrate = {}% {}%".format(w1*100, w2*100))
-    w1, w2, _ = calculate_winrate(ConnectX(), agent, Agent_expert())
-    print("Expert winrate = {}% {}%".format(w1*100, w2*100))
+    print_comparison(ConnectX(), agent, Agent_random(), 200)
+    print_comparison(ConnectX(), agent, Agent_expert(), 4)
 
     train_all(episodes, view_winrate=True)

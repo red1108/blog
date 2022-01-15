@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 # U = V + C * prob * sqrt(N_tot)/(1+N)
-C = 1.0
+C = 1
 
 
 def agent_result(agent, game):
@@ -37,7 +37,7 @@ class Node:
         self.winner = self.game.get_winner()
 
         if self.winner is not None:
-            self.V = self.winner * self.game.get_player()
+            self.V = -self.winner * self.game.get_player()
             self.U = 0 if self.winner == 0 else self.V * float('inf')
 
         self.mother = mother
@@ -50,7 +50,7 @@ class Node:
         for action, game in zip(actions, games):
             game.step(action)
 
-        self.child = {a:Node(g, self, p) for a, g, p in zip(actions, games, probs)}
+        self.child = {a: Node(g, self, p) for a, g, p in zip(actions, games, probs)}
 
     def explore(self, agent):
 
@@ -101,7 +101,8 @@ class Node:
             # Update sibling's U
             for sibling in mother.child.values():
                 if abs(sibling.U) is not float("inf"):
-                    sibling.U = sibling.V + C * float(sibling.prob) * sqrt(mother.N) / (1 + sibling.N)
+                    # sibling.U = sibling.V + C * float(sibling.prob) * sqrt(mother.N) / (1 + sibling.N)
+                    sibling.U = sibling.V + C * sqrt(mother.N) / (1 + sibling.N)
 
             current = current.mother
 
